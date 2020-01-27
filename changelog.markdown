@@ -1,4 +1,4 @@
-# Choosenim changelog
+# clitemplate changelog
 
 ## 0.5.1 - 15/01/2020
 

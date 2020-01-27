@@ -10,7 +10,7 @@ proc parseVersion*(versionStr: string): Version =
     let msg = "Invalid version, path or unknown channel. " &
               "Try 0.16.0, #head, #commitHash, or stable. " &
               "See --help for more examples."
-    raise newException(ChooseNimError, msg)
+    raise newException(clitemplateError, msg)
 
   let parts = versionStr.split(".")
   if parts.len >= 3 and parts[2].parseInt() mod 2 != 0:
@@ -18,9 +18,9 @@ proc parseVersion*(versionStr: string): Version =
               "it hasn't been released so you cannot install it this " &
               "way. All unreleased versions of Nim " &
               "have an odd patch number in their version.") % versionStr
-    let exc = newException(ChooseNimError, msg)
+    let exc = newException(clitemplateError, msg)
     exc.hint = "If you want to install the development version then run " &
-               "`choosenim devel`."
+               "`clitemplate devel`."
     raise exc
 
   result = newVersion(versionStr)
@@ -36,7 +36,7 @@ proc doCmdRaw*(cmd: string) =
   displayDebug("Output", output)
 
   if exitCode != QuitSuccess:
-    raise newException(ChooseNimError,
+    raise newException(clitemplateError,
         "Execution failed with exit code $1\nCommand: $2\nOutput: $3" %
         [$exitCode, cmd, output])
 
@@ -46,7 +46,7 @@ proc extract*(path: string, extractDir: string) =
   try:
     nimarchive.extract(path, extractDir)
   except Exception as exc:
-    raise newException(ChooseNimError, "Unable to extract. Error was '$1'." %
+    raise newException(clitemplateError, "Unable to extract. Error was '$1'." %
                        exc.msg)
 
 proc getProxy*(): Proxy =

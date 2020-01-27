@@ -6,8 +6,8 @@ import nimblepkg/[cli, version]
 import nimblepkg/common as nimbleCommon
 from nimblepkg/packageinfo import getNameVersion
 
-import choosenimpkg/[download, builder, switcher, common, cliparams, versions]
-import choosenimpkg/[utils, channel, telemetry]
+import clitemplatepkg/[download, builder, switcher, common, cliparams, versions]
+import clitemplatepkg/[utils, channel, telemetry]
 
 proc installVersion(version: Version, params: CliParams) =
   # Install the requested version.
@@ -38,7 +38,7 @@ proc chooseVersion(version: string, params: CliParams) =
       let path = downloadMingw32(params)
       extract(path, getMingwPath(params))
     else:
-      raise newException(ChooseNimError,
+      raise newException(clitemplateError,
                          "No C compiler found. Nim compiler requires a C compiler.\n" &
                          "Install clang or gcc using your favourite package manager.")
 
@@ -70,42 +70,42 @@ proc choose(params: CliParams) =
       chooseVersion(params.command, params)
 
 proc updateSelf(params: CliParams) =
-  display("Updating", "choosenim", priority = HighPriority)
+  display("Updating", "clitemplate", priority = HighPriority)
 
   let version = getChannelVersion("self", params, live=true).newVersion
-  if version <= chooseNimVersion.newVersion:
-    display("Info:", "Already up to date at version " & chooseNimVersion,
+  if version <= clitemplateVersion.newVersion:
+    display("Info:", "Already up to date at version " & clitemplateVersion,
             Success, HighPriority)
     return
 
   # https://stackoverflow.com/a/9163044/492186
   let tag = "v" & $version
-  let filename = "choosenim-" & $version & "_" & hostOS & "_" & hostCPU.addFileExt(ExeExt)
-  let url = "https://github.com/dom96/choosenim/releases/download/$1/$2" % [
+  let filename = "clitemplate-" & $version & "_" & hostOS & "_" & hostCPU.addFileExt(ExeExt)
+  let url = "https://github.com/dom96/clitemplate/releases/download/$1/$2" % [
     tag, filename
   ]
-  let newFilename = getAppDir() / "choosenim_new".addFileExt(ExeExt)
+  let newFilename = getAppDir() / "clitemplate_new".addFileExt(ExeExt)
   downloadFile(url, newFilename, params)
 
   let appFilename = getAppFilename()
-  # Move choosenim.exe to choosenim_ver.exe
-  let oldFilename = "choosenim_" & chooseNimVersion.addFileExt(ExeExt)
+  # Move clitemplate.exe to clitemplate_ver.exe
+  let oldFilename = "clitemplate_" & clitemplateVersion.addFileExt(ExeExt)
   display("Info:", "Renaming '$1' to '$2'" % [appFilename, oldFilename])
   moveFile(appFilename, getAppDir() / oldFilename)
 
-  # Move choosenim_new.exe to choosenim.exe
+  # Move clitemplate_new.exe to clitemplate.exe
   display("Info:", "Renaming '$1' to '$2'" % [newFilename, appFilename])
   moveFile(newFilename, appFilename)
 
   display("Info:", "Setting +x on downloaded file")
   inclFilePermissions(appFilename, {fpUserExec, fpGroupExec})
 
-  display("Info:", "Updated choosenim to version " & $version,
+  display("Info:", "Updated clitemplate to version " & $version,
           Success, HighPriority)
 
 proc update(params: CliParams) =
   if params.commands.len != 2:
-    raise newException(ChooseNimError,
+    raise newException(clitemplateError,
                        "Expected 1 parameter to 'update' command")
 
   let channel = params.commands[1]
@@ -262,7 +262,7 @@ when isMainModule:
   var params = newCliParams(proxyExeMode = false)
   try:
     parseCliParams(params)
-    createDir(params.chooseNimDir)
+    #createDir(params)
     discard loadAnalytics(params)
     performAction(params)
   except NimbleError:

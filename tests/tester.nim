@@ -3,9 +3,9 @@
 import osproc, streams, unittest, strutils, os, sequtils, future
 
 var rootDir = getCurrentDir().parentDir()
-var exePath = rootDir / "bin" / addFileExt("choosenim", ExeExt)
+var exePath = rootDir / "bin" / addFileExt("clitemplate", ExeExt)
 var nimbleDir = rootDir / "tests" / "nimbleDir"
-var choosenimDir = rootDir / "tests" / "choosenimDir"
+var clitemplateDir = rootDir / "tests" / "clitemplateDir"
 
 template cd*(dir: string, body: untyped) =
   ## Sets the current dir to ``dir``, executes ``body`` and restores the
@@ -19,8 +19,8 @@ template beginTest() =
   # Clear custom dirs.
   removeDir(nimbleDir)
   createDir(nimbleDir)
-  removeDir(choosenimDir)
-  createDir(choosenimDir)
+  removeDir(clitemplateDir)
+  createDir(clitemplateDir)
 
 proc outputReader(stream: Stream, missedEscape: var bool): string =
   result = ""
@@ -68,7 +68,7 @@ proc exec(args: varargs[string], exe=exePath,
   if not global:
     quotedArgs.add("--nimbleDir:" & nimbleDir)
     if exe != "nimble":
-      quotedArgs.add("--chooseNimDir:" & choosenimDir)
+      quotedArgs.add("--clitemplateDir:" & clitemplateDir)
   quotedArgs.add("--noColor")
 
   for i in 0..quotedArgs.len-1:
@@ -106,7 +106,7 @@ proc hasLine(lines: seq[string], line: string): bool =
   for i in lines:
     if i.normalize.strip() == line.normalize(): return true
 
-test "can compile choosenim":
+test "can compile clitemplate":
   cd "..":
     let (_, exitCode) = exec("build", exe="nimble", global=true, liveOutput=true)
     check exitCode == QuitSuccess
@@ -170,4 +170,4 @@ when defined(linux):
       check inLines(output.processOutput, "already built")
       check hasLine(output.processOutput, "switched to nim 1.0.0")
 
-      check not dirExists(choosenimDir / "toolchains" / "nim-1.0.0" / "c_code")
+      check not dirExists(clitemplateDir / "toolchains" / "nim-1.0.0" / "c_code")

@@ -42,7 +42,7 @@ type
 
 proc initEvent*(category: EventCategory, action="", label="",
                 value=none(int)): Event =
-  let cmd = "choosenim " & commandLineParams().join(" ")
+  let cmd = "clitemplate " & commandLineParams().join(" ")
   return Event(category: category,
      action: if action.len == 0: cmd else: action,
      label: label, value: value)
@@ -66,7 +66,7 @@ proc promptCustom(msg: string, params: CliParams): string =
     return promptCustom(msg, "")
 
 proc analyticsPrompt(params: CliParams) =
-  let msg = ("Can choosenim record and send anonymised telemetry " &
+  let msg = ("Can clitemplate record and send anonymised telemetry " &
              "data? [y/n]\n" &
              "Anonymous aggregate user analytics allow us to prioritise\n" &
              "fixes and features based on how, where and when people " &
@@ -91,9 +91,9 @@ proc analyticsPrompt(params: CliParams) =
 proc report*(obj: Event | Timing | ref Exception, params: CliParams)
 proc loadAnalytics*(params: CliParams): bool =
   ## Returns ``true`` if ``analytics`` object has been loaded successfully.
-  if getEnv("CHOOSENIM_NO_ANALYTICS") == "1":
+  if getEnv("clitemplate_NO_ANALYTICS") == "1":
     display("Info:",
-            "Not sending analytics because CHOOSENIM_NO_ANALYTICS is set.",
+            "Not sending analytics because clitemplate_NO_ANALYTICS is set.",
             priority=MediumPriority)
     return false
 
@@ -117,8 +117,8 @@ proc loadAnalytics*(params: CliParams): bool =
             priority=LowPriority)
     return false
 
-  params.analytics = newAsyncAnalytics("UA-105812497-1", clientID, "choosenim",
-                                       chooseNimVersion, proxy = getProxy())
+  params.analytics = newAsyncAnalytics("UA-105812497-1", clientID, "clitemplate",
+                                       clitemplateVersion, proxy = getProxy())
 
   # Report OS info only once.
   if prompted:

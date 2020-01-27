@@ -1,10 +1,10 @@
 import nimblepkg/version
 
 type
-  ChooseNimError* = object of NimbleError
+  clitemplateError* = object of NimbleError
 
 const
-  chooseNimVersion* = "0.5.1"
+  clitemplateVersion* = "0.5.1"
 
   proxies* = [
       "nim",

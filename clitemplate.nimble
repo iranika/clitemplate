@@ -1,13 +1,13 @@
 # Package
 
-version       = "0.5.1"
-author        = "Dominik Picheta"
-description   = "The Nim toolchain installer."
+version       = "0.0.1"
+author        = "iranika"
+description   = "The better practice CLI tool for nim"
 license       = "MIT"
 
 srcDir = "src"
 binDir = "bin"
-bin = @["choosenim"]
+bin = @["clitemplate"]
 
 skipExt = @["nim"]
 
@@ -18,6 +18,6 @@ requires "libcurl >= 1.0.0"
 requires "analytics >= 0.2.0"
 requires "osinfo >= 0.3.0"
 
-task test, "Run the choosenim tester!":
+task test, "Run the clitemplate tester!":
   withDir "tests":
     exec "nim c -r tester"

@@ -10,7 +10,7 @@ type
   CliParams* = ref object
     commands*: seq[string]
     onlyInstalled*: bool
-    choosenimDir*: string
+    clitemplateDir*: string
     firstInstall*: bool
     nimbleOptions*: Options
     analytics*: AsyncAnalytics
@@ -18,28 +18,28 @@ type
 
 
 let doc = """
-choosenim: The Nim toolchain installer.
+clitemplate: The Nim toolchain installer.
 
 Choose a job. Choose a mortgage. Choose life. Choose Nim.
 
 Usage:
-  choosenim <version/path/channel>
+  clitemplate <version/path/channel>
 
 Example:
-  choosenim 0.16.0
+  clitemplate 0.16.0
     Installs (if necessary) and selects version 0.16.0 of Nim.
-  choosenim stable
+  clitemplate stable
     Installs (if necessary) Nim from the stable channel (latest stable release)
     and then selects it.
-  choosenim #head
+  clitemplate #head
     Installs (if necessary) and selects the latest current commit of Nim.
-    Warning: Your shell may need quotes around `#head`: choosenim "#head".
-  choosenim ~/projects/nim
+    Warning: Your shell may need quotes around `#head`: clitemplate "#head".
+  clitemplate ~/projects/nim
     Selects the specified Nim installation.
-  choosenim update stable
+  clitemplate update stable
     Updates the version installed on the stable release channel.
-  choosenim versions [--installed]
-    Lists the available versions of Nim that choosenim has access to.
+  clitemplate versions [--installed]
+    Lists the available versions of Nim that clitemplate has access to.
 
 Channels:
   stable
@@ -52,7 +52,7 @@ Commands:
   update    <version/channel>    Installs the latest release of the specified
                                  version or channel.
   show                           Displays the selected version and channel.
-  update    self                 Updates choosenim itself.
+  update    self                 Updates clitemplate itself.
   versions  [--installed]        Lists available versions of Nim, passing
                                  `--installed` only displays versions that
                                  are installed locally (no network requests).
@@ -65,8 +65,8 @@ Options:
   --debug               Show debug (and higher) priority output.
   --noColor             Don't colorise output.
 
-  --choosenimDir:<dir>  Specify the directory where toolchains should be
-                        installed. Default: ~/.choosenim.
+  --clitemplateDir:<dir>  Specify the directory where toolchains should be
+                        installed. Default: ~/.clitemplate.
   --nimbleDir:<dir>     Specify the Nimble directory where binaries will be
                         placed. Default: ~/.nimble.
   --firstInstall        Used by install script.
@@ -76,13 +76,13 @@ proc command*(params: CliParams): string =
   return params.commands[0]
 
 proc getDownloadDir*(params: CliParams): string =
-  return params.chooseNimDir / "downloads"
+  return params.clitemplateDir / "downloads"
 
 proc getInstallDir*(params: CliParams): string =
-  return params.chooseNimDir / "toolchains"
+  return params.clitemplateDir / "toolchains"
 
 proc getChannelsDir*(params: CliParams): string =
-  return params.chooseNimDir / "channels"
+  return params.clitemplateDir / "channels"
 
 proc getBinDir*(params: CliParams): string =
   return params.nimbleOptions.getBinDir()
@@ -91,13 +91,13 @@ proc getCurrentFile*(params: CliParams): string =
   ## Returns the path to the file which specifies the currently selected
   ## installation. The contents of this file is a path to the selected Nim
   ## directory.
-  return params.chooseNimDir / "current"
+  return params.clitemplateDir / "current"
 
 proc getCurrentChannelFile*(params: CliParams): string =
-  return params.chooseNimDir / "current-channel"
+  return params.clitemplateDir / "current-channel"
 
 proc getAnalyticsFile*(params: CliParams): string =
-  return params.chooseNimDir / "analytics"
+  return params.clitemplateDir / "analytics"
 
 proc getMingwPath*(params: CliParams): string =
   return params.getInstallDir() / "mingw32"
@@ -120,19 +120,19 @@ proc writeHelp() =
   quit(QuitFailure)
 
 proc writeVersion() =
-  echo("choosenim v$1 ($2 $3) [$4/$5]" %
-       [chooseNimVersion, CompileDate, CompileTime, hostOS, hostCPU])
+  echo("clitemplate v$1 ($2 $3) [$4/$5]" %
+       [clitemplateVersion, CompileDate, CompileTime, hostOS, hostCPU])
   quit(QuitSuccess)
 
 proc writeNimbleBinDir(params: CliParams) =
-  # Special option for scripts that install choosenim.
+  # Special option for scripts that install clitemplate.
   echo(params.getBinDir())
   quit(QuitSuccess)
 
 proc newCliParams*(proxyExeMode: bool): CliParams =
   new result
   result.commands = @[]
-  result.choosenimDir = getHomeDir() / ".choosenim"
+  result.clitemplateDir = getHomeDir() / ".clitemplate"
   # Init nimble params.
   try:
     result.nimbleOptions = initOptions()
@@ -150,27 +150,27 @@ proc parseCliParams*(params: var CliParams, proxyExeMode = false) =
       params.commands.add(key)
     of cmdLongOption, cmdShortOption:
       let normalised = key.normalize()
-      # Don't want the proxyExe to return choosenim's help/version.
+      # Don't want the proxyExe to return clitemplate's help/version.
       case normalised
       of "help", "h":
         if not proxyExeMode: writeHelp()
       of "version", "v":
         if not proxyExeMode: writeVersion()
       of "getnimblebin":
-        # Used by installer scripts to know where the choosenim executable
+        # Used by installer scripts to know where the clitemplate executable
         # should be copied.
         if not proxyExeMode: writeNimbleBinDir(params)
       of "verbose": setVerbosity(LowPriority)
       of "debug": setVerbosity(DebugPriority)
       of "nocolor": setShowColor(false)
-      of "choosenimdir": params.choosenimDir = val.absolutePath()
+      of "clitemplatedir": params.clitemplateDir = val.absolutePath()
       of "nimbledir": params.nimbleOptions.nimbleDir = val.absolutePath()
       of "firstinstall": params.firstInstall = true
       of "y", "yes": params.nimbleOptions.forcePrompts = forcePromptYes
       of "installed": params.onlyInstalled = true
       else:
         if not proxyExeMode:
-          raise newException(ChooseNimError, "Unknown flag: --" & key)
+          raise newException(clitemplateError, "Unknown flag: --" & key)
     of cmdEnd: assert(false)
 
   if params.commands.len == 0 and not proxyExeMode:
